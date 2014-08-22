@@ -21,6 +21,9 @@ unsigned long delayTime;
 // Hora da iteração anterior do loop
 unsigned long lastTime;
 
+/ Hora da iteração atual
+unsigned long currTime;
+
 // Diz se o LED está "travado" (dois botões pressionados há
 // mais de 500 ms)
 int locked;
@@ -33,9 +36,11 @@ int state;
 // estão sendo pressionados
 int periodBothHaveBeenPressed() {
 	
+	unsigned long but1 = currTime - sinceBut1Pressed;
+	unsigned long but2 = currTime - sinceBut2Pressed;
+	
 	if (digitalRead(BUT1_PIN) && digitalRead(BUT2_PIN))
-		return (sinceBut1Pressed < sinceBut2Pressed)?
-			sinceBut1Pressed: sinceBut2Pressed;
+		return (but1 < but2)? but1: but2;
 
 	return 0;
 }
@@ -62,7 +67,7 @@ void setup()
 void loop() 
 {
 	// Pega o tempo atual
-	unsigned long currTime = millis();
+	currTime = millis();
 
 	// Caso de os dois botões estarem apertados por mais
 	// de meio segundo (locked fica setado)
