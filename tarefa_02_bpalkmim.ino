@@ -21,7 +21,7 @@ unsigned long delayTime;
 // Hora da iteração anterior do loop
 unsigned long lastTime;
 
-/ Hora da iteração atual
+// Hora da iteração atual
 unsigned long currTime;
 
 // Diz se o LED está "travado" (dois botões pressionados há
