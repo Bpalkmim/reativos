@@ -1,0 +1,185 @@
+// O jogo é baseado em breakout.
+// O quadrado que se move só o faz nas diagonais
+// As setas do teclado controlam a barra inferior para a esquerda ou a direita
+// Clicar em qualquer lugar da tela acelera o quadrado
+
+#include "sdl.ceu"
+
+input void SDL_REDRAW;
+input void SDL_QUIT;
+input _SDL_KeyboardEvent* SDL_KEYDOWN;
+input _SDL_MouseButtonEvent* SDL_MOUSEBUTTONDOWN;
+
+var int win_w;
+var int win_h;
+var _SDL_Window* win;
+    finalize
+        win = _SDL_CreateWindow("Example 1",
+                            0, 0, 640, 480, _SDL_WINDOW_SHOWN);
+    with
+        _SDL_DestroyWindow(win);
+    end
+_assert(win != null);
+
+var _SDL_Renderer* ren;
+    finalize
+        ren = _SDL_CreateRenderer(win, -1, 0);
+    with
+        _SDL_DestroyRenderer(ren);
+    end
+_assert(ren != null);
+
+_srand(_time(null));
+
+var _SDL_Rect background;
+	background.w = 630;
+	background.h = 470;
+	background.x = 5;
+	background.y = 5;
+
+var _SDL_Rect r1;
+    r1.w = 30;
+    r1.h = 30;
+    r1.x = 310;
+    r1.y = 310;
+
+// retângulo controlado pelo usuário
+var _SDL_Rect rUser;
+    rUser.w = 170;
+    rUser.h = 8;
+    rUser.x = 250;
+    rUser.y = 420;
+
+// direção do quadrado que se move sozinho
+var int direction = 2;
+
+// velocidade do quadrado que se move sozinho
+// modificada pelo usuário ao clicar o mouse na tela
+var int delay = 30;
+
+par/or do
+    await SDL_QUIT;
+with
+// movimento do quadrado
+	loop do
+		await (delay)ms;
+		// diagonal superior direita
+		if direction == 0 then
+			// chegou à parede da direita, vai para superior esquerda
+			if r1.x + r1.w >= background.x + background.w then
+				direction = 1;
+			// chegou no topo, vai para inferior direita
+			else/if r1.y <= background.y then
+				direction = 3;
+			// continua normalmente
+			else
+				r1.x = r1.x + 1;
+				r1.y = r1.y - 1;
+			end
+
+		//diagonal superior esquerda
+		else/if direction == 1 then
+			// chegou à margem esquerda, vai para superior direita
+			if r1.x <= background.x then
+				direction = 0;
+			// chegou no topo, vai para inferior esquerda
+			else/if r1.y <= background.y then
+				direction = 2;
+			// continua normalmente
+			else
+				r1.x = r1.x - 1;
+           		r1.y = r1.y - 1;
+			end
+
+		// diagonal inferior esquerda
+		else/if direction == 2 then
+			// chegou à margem esquerda, vai para inferior direita
+			if r1.x <= background.x then
+				direction = 3;
+			// chegou embaixo
+			else/if r1.y + r1.h >= rUser.y then
+				// verifica se o quadrado bate no retângulo
+				// se estiver, vai para superior esquerda
+				if r1.x + r1.w >= rUser.x and r1.x <= rUser.x + rUser.w then
+					direction = 1;
+				else
+					// está fora, o jogo acaba
+					break;
+				end
+			// continua normalmente
+			else
+				r1.x = r1.x - 1;
+               	r1.y = r1.y + 1;
+			end
+
+		// diagonal inferior direita
+		else/if direction == 3 then
+			// chegou à margem direita, vai para inferior esquerda
+			if r1.x + r1.w >= background.x + background.w then
+				direction = 2;
+			// chegou embaixo
+			else/if r1.y + r1.h >= rUser.y then
+				// verifica se o quadrado bate no retângulo
+				// se estiver, vai para superior direita
+				if r1.x + r1.w >= rUser.x and r1.x <= rUser.x + rUser.w then
+					direction = 0;
+				else
+					// está fora, o jogo acaba
+					break;
+				end
+			// continua normalmente
+			else
+				r1.x = r1.x + 1;
+               	r1.y = r1.y + 1;
+			end
+		end
+	end
+with
+// retângulo do usuário
+	var _SDL_KeyboardEvent* key;
+	every key in SDL_KEYDOWN do 
+		// Move para a esquerda
+		if key:keysym.sym == _SDLK_LEFT then
+			if rUser.x >= background.x then
+				rUser.x = rUser.x - 10;
+			end
+		// Move para a direita
+		else/if key:keysym.sym == _SDLK_RIGHT then
+			if rUser.x + rUser.w < background.x + background.w then
+				rUser.x = rUser.x + 10;
+			end
+		end		
+	end
+with
+// acelerar o quadrado i.e. level up!
+	loop do
+		var _SDL_MouseButtonEvent* but;
+        but = await SDL_MOUSEBUTTONDOWN;
+		if delay > 1 then
+			delay = delay - 1;
+		end
+	end
+with
+	every SDL_REDRAW do
+
+		// fundo
+		_SDL_SetRenderDrawColor(ren, 0x00,0x00,0x00,0x00);
+        _SDL_RenderFillRect(ren, null);		
+
+		// limites de movimentação
+        _SDL_SetRenderDrawColor(ren, 0xFF,0xFF,0xFF,0x00);
+        _SDL_RenderFillRect(ren, &background);
+		
+		// retângulo que se move sozinho
+        _SDL_SetRenderDrawColor(ren, 0x00,0x00,0xFF,0x00);
+        _SDL_RenderFillRect(ren, &r1);
+
+		// retângulo controlado pelo usuário
+		_SDL_SetRenderDrawColor(ren, 0xFF,0x00,0x00,0x00);
+        _SDL_RenderFillRect(ren, &rUser);
+
+        _SDL_RenderPresent(ren);
+    end
+end
+
+escape 0;
