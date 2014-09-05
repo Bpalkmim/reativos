@@ -1,0 +1,63 @@
+input int PIN02, PIN03;
+output int PIN13;
+
+var int dt = 1000;
+loop do
+	par/or do
+	    loop do
+    	    emit PIN13 => _HIGH;
+	        await (dt)ms;
+    	    emit PIN13 => _LOW;
+    	    await (dt)ms;
+    	end
+	with
+    	loop do
+    	    var int val = await PIN02
+                      	  until val==1;
+    	    await 200ms;
+    	    dt = dt - 100;
+    	end
+	with
+    	loop do
+    	    var int val = await PIN03
+                      	  until val==1;
+    	    await 200ms;
+    	    dt = dt + 100;
+    	end
+	with
+    	loop do
+    	    par/or do
+    	        par/and do
+    	            var int val = await PIN02
+                      			  until val==1;
+    	        with
+    	            var int val = await PIN03
+                      	  		  until val==1;
+    	        end
+    	        break;
+    	    with
+    	        par/or do
+					var int val = await PIN02
+                      	  		  until val==1;
+				with
+					var int val = await PIN03
+                      	  		  until val==1;
+				end
+				await 500ms;
+   	    	end
+    	end
+	with
+		loop do
+        	var int val = await PIN02
+                      	  until val==_HIGH;
+        	await 50ms;
+        	par/or do
+            	var int val2 = await PIN03
+                      	  	   until val2==_LOW;
+        	with
+            	await 5s;
+            	break;
+        	end
+    	end 
+	end
+end
