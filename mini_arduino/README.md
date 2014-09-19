@@ -7,3 +7,9 @@ Arduino
 
 * Subir e descer afinação(12)
 
+* 13 inputs das notas
+
+* 5 inputs dos botões
+
+* 4 outputs nos buzzers
+
