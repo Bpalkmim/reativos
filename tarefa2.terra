@@ -1,0 +1,64 @@
+#include "/home/terra/TerraNet_v0.1/terra/TerraNet.defs"
+
+var ushort nodeId = getNodeId();
+
+pktype usrMsg from radioMsg with
+    var ushort temp;
+end
+var usrMsg msgRadio;
+
+if nodeId == 11 then
+    var ushort temp;
+    var ubyte stat;
+    par do
+        loop do
+            await 3s;
+            emit REQ_TEMP();
+            temp = await TEMP;
+            msgRadio.source = nodeId;
+            msgRadio.target = 1;
+            msgRadio.temp = temp;
+            stat = qPut(msgRadio);
+        end
+    with
+        loop do
+            msgRadio = await RECEIVE;
+            msgRadio.target = 1;
+            stat = qPut(msgRadio);
+        end
+    with   
+        loop do
+            await Q_READY;
+            stat = qGet(msgRadio);
+            emit SEND(msgRadio);
+            await SEND_DONE;
+        end
+    end
+else
+    var ushort temp;
+    var ubyte stat;
+    par do
+        loop do
+            await 3s;
+            emit REQ_TEMP();
+            temp = await TEMP;
+            msgRadio.source = nodeId;
+            msgRadio.target = nodeId - 1;
+            msgRadio.temp = temp;
+            stat = qPut(msgRadio);
+        end
+    with
+        loop do
+            msgRadio = await RECEIVE;
+            msgRadio.target = nodeId - 1;
+            stat = qPut(msgRadio);
+        end
+    with   
+        loop do
+            await Q_READY;
+            stat = qGet(msgRadio);
+            emit SEND(msgRadio);
+            await SEND_DONE;
+        end
+    end
+end
