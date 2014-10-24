@@ -1,5 +1,5 @@
 // Mini projeto Arduino: Teclado de transposição
-//
+
 // Bernardo Alkmim
 // Leonardo Kaplan
 #include "pitches.h"
@@ -19,7 +19,6 @@ int notes[NUMBER_OCTAVES * NOTES_OCTAVE] = {notes_xxx};
 
 int octave_current = 3;
 
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
 void octave_up(){
   octave_current = (octave_current + 1) % NUMBER_OCTAVES;
 }
@@ -27,48 +26,25 @@ void octave_down(){
   octave_current = (octave_current - 1 + NUMBER_OCTAVES) % NUMBER_OCTAVES;
 }
 void tuning_down(){
-    tuning  = (tuning - 1 + NOTES_OCTAVE) %  NOTES_OCTAVE;
+  tuning  = (tuning - 1 + NOTES_OCTAVE) %  NOTES_OCTAVE;
 }
 void tuning_up(){
-    tuning  = (tuning + 1) % NOTES_OCTAVE;
+  tuning  = (tuning + 1) % NOTES_OCTAVE;
 }
-void setkey(int n){
-    digitalWrite(2,bitRead(n,2));
-    digitalWrite(3,bitRead(n,1));
-    digitalWrite(4,bitRead(n,0));
 
+void setkey(int n){
+  digitalWrite(2,bitRead(n,2));
+  digitalWrite(3,bitRead(n,1));
+  digitalWrite(4,bitRead(n,0));
 }
-int noteDurations[] = {4,4,4};
+
 void play(int n){
-   // Deslocamento da nota em função da oitava atual e da afinação
+  // Deslocamento da nota em função da oitava atual e da afinação
   int shift = NOTES_OCTAVE * octave_current + tuning;
   n = n + shift;
-  int melody[] = {*(notes + shift + 0), *(notes + shift + 2), *(notes + shift + 4)};
- 
-  //Serial.println(melody[0]);
-  //Serial.println(melody[1]);
-  //Serial.println(melody[2]);
- 
-  //for (int thisNote = 0; thisNote < 3; thisNote++) {
-
-    // to calculate the note duration, take one second
-    // divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    //int noteDuration = 1000/noteDurations[thisNote];
-    //tone(8, melody[thisNote],noteDuration);
-    //int noteDuration = 1000/4;
-    //noTone(BUZZER);
-    tone(BUZZER, n);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    //int pauseBetweenNotes = noteDuration * 1.30;
-    //delay(pauseBetweenNotes);
-    //delay(30);// stop the tone playing:
-    //noTone(8);
-    //noTone(BUZZER);
-  //}
+  tone(BUZZER, n);
 }
+
 int key;
 char s[20];
 int Boctave,Btuning;
@@ -76,6 +52,7 @@ int tocando;
 int Batual;
 unsigned long currTime;
 unsigned long lastTime;
+
 void setup() {
     Serial.begin(9600);
     pinMode(2,OUTPUT);
@@ -129,9 +106,8 @@ void loop() {
         estado[key%NUM_KEYS] = digitalRead(9);
         key++;
       }
-      //sprintf(s,"%d:%d - %d/%d",key%NUM_KEYS,Bkey,octave_current, tuning);
+      
       int nota = getnota(estado,NUM_KEYS);
-      Serial.println(nota);
 
       if(nota==-1 || (tocando != nota && tocando != -1))
       {
@@ -143,8 +119,7 @@ void loop() {
         play(nota);
         tocando = nota;
       }
-      //dt++;
-      //delay(100);  
+      
       lastTime = currTime;
     } 
 }
